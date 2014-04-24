@@ -8,6 +8,7 @@
 
 use strict;
 
+# So, the installed locations of the Genymotion commands are hardcoded here.
 my $GENYSHELL = '/Applications/Genymotion\ Shell.app/Contents/MacOS/genyshell';
 my $GENYPLAYER = '/Applications/Genymotion.app/Contents/MacOS/player';
 
@@ -32,22 +33,15 @@ sub get_devices {
     return @devices;
 }
 
-# ping_device($timeout)
-#   $timeout - time in seconds before giving up
+# ping_device()
 #   Returns the name of the device that responded, or undef if none responded.
 sub ping_device {
-    my $timeout = shift;
-
-    do {
-        for my $line (`$GENYSHELL -c "devices ping"`) {
-            chomp $line;
-            if ($line =~ /Genymotion virtual device selected: (.*)$/) {
-                return $1;
-            }
-            sleep $timeout if $timeout;
+    for my $line (`$GENYSHELL -c "devices ping"`) {
+        chomp $line;
+        if ($line =~ /Genymotion virtual device selected: (.*)$/) {
+            return $1;
         }
-    } while $timeout--;
-
+    }
     return undef;
 }
        
@@ -77,12 +71,12 @@ for my $device (@devices) {
                 die "Could not start device '$device->{name}'\n";
             }
             # wait a few sec for the device to really start
-            sleep 20;
+            sleep 15;
         }
         
         print "Trying to contact device...\n";
 
-        my $ping = ping_device($device_name, 10);
+        my $ping = ping_device();
 
         die "No response from device" unless $ping;
         die "The wrong device responded" unless $ping eq $device_name;
